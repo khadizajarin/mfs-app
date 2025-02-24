@@ -1,0 +1,8 @@
+# Ignore build files and dependencies
+.next/
+node_modules/
+.env
+node_modules/
+.next/
+dist/
+*.log
