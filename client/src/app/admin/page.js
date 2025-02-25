@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import Navbar from "../homepage/navbar";
 
 export default function AdminDashboard() {
-    const { user } = useContext(AuthContext); 
+  const { user } = useContext(AuthContext);
   const [agents, setAgents] = useState([]);
 
   useEffect(() => {
@@ -16,58 +16,51 @@ export default function AdminDashboard() {
   }, []);
 
   const approveAgent = async (agentEmail) => {
-    const adminEmail = user?.email; // ✅ Get logged-in admin email
-  
-    console.log("Sending approval request as admin:", adminEmail); // ✅ Debugging Log
-  
+    const adminEmail = user?.email;
     try {
       const response = await fetch("http://localhost:5000/api/admin/approve-agent", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminEmail, agentEmail }),
       });
-  
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-  
+
       Swal.fire("Success!", "Agent approved successfully!", "success");
-  
-      // Remove approved agent from the list
+
       setAgents(agents.filter((agent) => agent.email !== agentEmail));
     } catch (error) {
       console.error("Approval error:", error);
       Swal.fire("Error", error.message, "error");
     }
   };
-  
 
   return (
-    <div>
-        <Navbar></Navbar>
-        <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Admin Dashboard</h2>
-        <h3 className="text-xl font-semibold text-gray-700">Pending Agents</h3>
+    <div className="min-h-screen bg-[#A6F1E0] p-6">
+      <Navbar />
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 mt-6">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">Admin Dashboard</h2>
+        <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">Pending Agents</h3>
 
         {agents.length === 0 ? (
-            <p className="text-gray-600">No pending agents.</p>
+          <p className="text-gray-600 text-center">No pending agents.</p>
         ) : (
-            <ul className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+          <ul className="space-y-4">
             {agents.map((agent) => (
-                <li key={agent._id} className="flex justify-between items-center p-2 border-b">
-                <span>{agent.name} ({agent.email})</span>
+              <li key={agent._id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow">
+                <span className="text-gray-800 font-medium">{agent.name} ({agent.email})</span>
                 <button
-                    className="btn btn-success"
-                    onClick={() => approveAgent(agent.email)}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+                  onClick={() => approveAgent(agent.email)}
                 >
-                    Approve
+                  Approve
                 </button>
-                </li>
+              </li>
             ))}
-            </ul>
+          </ul>
         )}
-        </div>
-
+      </div>
     </div>
-    
   );
 }

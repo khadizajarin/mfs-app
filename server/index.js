@@ -120,6 +120,102 @@ app.post("/api/transactions/cash-out", async (req, res) => {
   }
 });
 
+app.post("/api/transactions/cash-in", async (req, res) => {
+  const { userMobile, agentMobile, amount, pin } = req.body;
+
+  // Validate input
+  if (!userMobile || !agentMobile || !amount || !pin) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  if (amount < 50) {
+    return res.status(400).json({ message: "Minimum cash-in amount is 50 Taka." });
+  }
+
+  try {
+    // Find user and agent
+    const user = await User.findOne({ mobile: userMobile });
+    const agent = await User.findOne({ mobile: agentMobile, accountType: "agent" });
+
+    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!agent) return res.status(404).json({ message: "Agent not found or incorrect role." });
+
+    // Verify agent PIN
+    const bcrypt = require("bcrypt");
+    const isPinValid = await bcrypt.compare(pin, agent.pin);
+    if (!isPinValid) {
+      return res.status(400).json({ message: "Incorrect PIN." });
+    }
+
+    // Check if the agent has enough balance
+    if (agent.balance < amount) {
+      return res.status(400).json({ message: "Agent has insufficient balance." });
+    }
+
+    // Update balances
+    user.balance += amount;
+    agent.balance -= amount; // Deduct from agent
+
+    // Save the updated balances
+    await user.save();
+    await agent.save();
+
+    // Optionally, save transaction details
+    const transaction = new Transaction({
+      sender: agent._id,
+      recipient: user._id,
+      amount,
+      transactionType: "cash-in",
+    });
+
+    await transaction.save();
+
+    res.status(200).json({
+      message: `Cash-in successful! ${amount} Taka added to user balance.`,
+      transactionId: transaction.transactionId,
+    });
+
+  } catch (error) {
+    console.error("Error processing cash-in:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
+// API to get agent details (mobile and PIN) by email
+app.get("/api/users/get-agent", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if the user is an agent
+    if (user.accountType !== "agent") {
+      return res.status(400).json({ message: "User is not an agent." });
+    }
+
+    // Return the agent's details (mobile and PIN)
+    res.status(200).json({
+      mobile: user.mobile,
+      pin: user.pin,  // Assuming PIN is stored securely (hashed)
+    });
+
+  } catch (error) {
+    console.error("Error fetching agent details:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
 
 
 
