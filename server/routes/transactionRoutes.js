@@ -67,5 +67,31 @@ router.post("/send-money", async (req, res) => {
     res.status(500).json({ message: "Server error.", error });
   }
 });
+router.get("/transactions", async (req, res) => {
+  try {
+    const transactions = await Transaction.find().populate('sender recipient');
+    res.status(200).json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
 
+// Define route to get user-specific transactions
+router.get("/transactions/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const transactions = await Transaction.find({
+      $or: [
+        { sender: mongoose.Types.ObjectId(userId) },
+        { recipient: mongoose.Types.ObjectId(userId) }
+      ]
+    }).populate('sender recipient');
+    res.status(200).json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
 module.exports = router;

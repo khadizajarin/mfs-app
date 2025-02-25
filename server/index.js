@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 const app = express();
 
@@ -11,17 +12,20 @@ const app = express();
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 
+app.use("/api", transactionRoutes);
 
 //admin route
 const adminRoutes = require("./routes/adminRoutes");
+
+// const Transaction = require("./models/Transaction"); // Import the Transaction model
 app.use("/api/admin", adminRoutes);
 
 // Routes
 app.use("/api/auth", authRoutes);
 
-
 // Define the /api/transactions/send-money route
 const User = require("./models/User"); // Import the User model
+const Transaction = require("./models/Transaction"); // Import the Transaction model
 
 // API to get user mobile number by email
 app.get("/api/users/get-mobile", async (req, res) => {
@@ -181,7 +185,6 @@ app.post("/api/transactions/cash-in", async (req, res) => {
   }
 });
 
-
 // API to get agent details (mobile and PIN) by email
 app.get("/api/users/get-agent", async (req, res) => {
   const { email } = req.query;
@@ -215,11 +218,51 @@ app.get("/api/users/get-agent", async (req, res) => {
   }
 });
 
+// app.get("/api/transactions", async (req, res) => {
+//   try {
+//     const transactions = await Transaction.find()
+//       .select("_id sender recipient amount fee transactionType transactionId date");
+
+//     res.status(200).json(transactions);
+//   } catch (error) {
+//     console.error("Error fetching transactions:", error);
+//     res.status(500).json({ message: "Internal server error." });
+//   }
+// });
 
 
+app.get('/api/transactions', async (req, res) => {
+  try {
+      const transactions = await Transaction.find()
+          .populate('sender', 'mobile')   // Replace sender ID with sender's mobile
+          .populate('receiver', 'mobile'); // Replace receiver ID with receiver's mobile
 
+      res.json(transactions);
+  } catch (error) {
+      res.status(500).json({ message: 'Server Error' });
+  }
+});
 
-const Transaction = require("./models/Transaction"); // Import the Transaction model
+app.get("/api/agents/approved", async (req, res) => {
+  try {
+    const agents = await User.find({ accountType: "agent", isApproved: true }).select("name mobile email");
+    res.status(200).json(agents);
+  } catch (error) {
+    console.error("Error fetching approved agents:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+app.get('/api/users/approved', async (req, res) => {
+  try {
+      const approvedUsers = await User.find({ accountType: "user", isApproved: true });
+      res.json(approvedUsers);
+      console.log(approvedUsers)
+  } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 
 app.post("/api/transactions/send-money", async (req, res) => {
   const { senderMobile, recipientMobile, amount } = req.body;

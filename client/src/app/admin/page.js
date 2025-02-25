@@ -37,7 +37,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#A6F1E0] p-6">
+    <div >
       <Navbar />
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 mt-6">
         <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">Admin Dashboard</h2>
@@ -50,12 +50,12 @@ export default function AdminDashboard() {
             {agents.map((agent) => (
               <li key={agent._id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow">
                 <span className="text-gray-800 font-medium">{agent.name} ({agent.email})</span>
-                <button
+                <Button
                   className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
                   onClick={() => approveAgent(agent.email)}
                 >
                   Approve
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

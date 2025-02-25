@@ -12,5 +12,6 @@ const userSchema = new mongoose.Schema({
   isApproved: { type: Boolean, default: false }, // Agents need admin approval
 }, { timestamps: true });
 
+
 const User = mongoose.model("User", userSchema);
 module.exports = User;
