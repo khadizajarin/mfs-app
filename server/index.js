@@ -11,6 +11,12 @@ const app = express();
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 
+
+//admin route
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/api/admin", adminRoutes);
+
+
 // Routes
 app.use("/api/auth", authRoutes);
 

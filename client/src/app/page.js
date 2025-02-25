@@ -6,13 +6,11 @@ import Swal from "sweetalert2";
 import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/lib/AuthProvider";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [role, setRole] = useState("user");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const { signIn } = useContext(AuthContext);
   const router = useRouter();
 
@@ -27,8 +25,15 @@ export default function Home() {
       });
   }, []);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
+  // Validation Schema
+  const validationSchema = Yup.object().shape({
+    role: Yup.string().oneOf(["user", "agent", "admin"]).required("Role is required"),
+    email: Yup.string().email("Invalid email format").required("Email is required"),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  });
+
+  const handleLogin = async (values, { setSubmitting }) => {
+    if (!values.email || !values.password) {
       Swal.fire({
         title: "Warning!",
         text: "Please enter email and password",
@@ -39,7 +44,7 @@ export default function Home() {
     }
 
     try {
-      await signIn(email, password);
+      await signIn(values.email, values.password);
       router.push("/homepage");
       Swal.fire({
         title: "Success!",
@@ -63,6 +68,8 @@ export default function Home() {
         icon: "error",
         confirmButtonText: "Ok",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -75,48 +82,60 @@ export default function Home() {
         <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
           <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
 
-          {/* Role Selection */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-600">Select Role</label>
-            <select
-              className="select select-bordered w-full mt-1"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="user">User</option>
-              <option value="agent">Agent</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+          {/* Formik Form */}
+          <Formik
+            initialValues={{ role: "user", email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleLogin}
+          >
+            {({ isSubmitting }) => (
+              <Form>
+                {/* Role Selection */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-600">Select Role</label>
+                  <Field as="select" name="role" className="select select-bordered w-full mt-1">
+                    <option value="user">User</option>
+                    <option value="agent">Agent</option>
+                    <option value="admin">Admin</option>
+                  </Field>
+                  <ErrorMessage name="role" component="p" className="text-red-500 text-xs mt-1" />
+                </div>
 
-          {/* Email Input */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-600">Email</label>
-            <input
-              type="email"
-              className="input input-bordered w-full mt-1"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+                {/* Email Input */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-600">Email</label>
+                  <Field
+                    type="email"
+                    name="email"
+                    className="input input-bordered w-full mt-1"
+                    placeholder="Enter your email"
+                  />
+                  <ErrorMessage name="email" component="p" className="text-red-500 text-xs mt-1" />
+                </div>
 
-          {/* Password Input */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-600">Password</label>
-            <input
-              type="password"
-              className="input input-bordered w-full mt-1"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+                {/* Password Input */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-600">Password</label>
+                  <Field
+                    type="password"
+                    name="password"
+                    className="input input-bordered w-full mt-1"
+                    placeholder="Enter your password"
+                  />
+                  <ErrorMessage name="password" component="p" className="text-red-500 text-xs mt-1" />
+                </div>
 
-          {/* Login Button */}
-          <button className="btn btn-primary w-full mt-6" onClick={handleLogin}>
-            Login as {role.charAt(0).toUpperCase() + role.slice(1)}
-          </button>
+                {/* Login Button */}
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full mt-6"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Logging in..." : "Login"}
+                </button>
+              </Form>
+            )}
+          </Formik>
 
           {/* Register Link */}
           <p className="text-sm text-center mt-4">
@@ -130,5 +149,3 @@ export default function Home() {
     </div>
   );
 }
-
-

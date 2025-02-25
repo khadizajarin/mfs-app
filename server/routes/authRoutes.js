@@ -43,4 +43,52 @@ router.post("/register", async (req, res) => {
   }
 });
 
+
+//approved user
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if agent is approved
+    if (user.accountType === "agent" && !user.isApproved) {
+      return res.status(403).json({ message: "Agent not approved by admin" });
+    }
+
+    // Check password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    res.json({ message: "Login successful", user });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// ✅ Fix: Get user details by email (MOVE THIS FROM `index.js`)
+router.get("/get-user", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    // Find the user in MongoDB
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
 module.exports = router;

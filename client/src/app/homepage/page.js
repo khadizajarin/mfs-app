@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AuthContext } from "@/lib/AuthProvider";
 import Swal from "sweetalert2";
 import PrivateRoute from "../components/PrivateRoute";
+import Navbar from "./navbar";
 
 export default function Homepage() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function Homepage() {
   return (
 
     <PrivateRoute>
+      <Navbar></Navbar>
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm text-center">
           <h1 className="text-2xl font-bold text-gray-800">Welcome</h1>

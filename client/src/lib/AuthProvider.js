@@ -41,15 +41,33 @@ const AuthProvider = ({children}) => {
     }
 
     //observer
-    useEffect( () => {
-        const unSubscribe = onAuthStateChanged(auth, currentUser => {
-            setUser(currentUser);
-            setLoading(false);
-        })
-        return () => {
-            unSubscribe();
-        }
-    }, [])
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+          if (firebaseUser) {
+            try {
+              // Fetch user details from the database
+              const response = await fetch(`http://localhost:5000/api/auth/get-user?email=${firebaseUser.email}`);
+              const data = await response.json();
+    
+              if (data.user) {
+                setUser({
+                  ...firebaseUser,
+                  accountType: data.user.accountType, // Add role from database
+                });
+              } else {
+                setUser(firebaseUser);
+              }
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+            }
+          } else {
+            setUser(null);
+          }
+          setLoading(false);
+        });
+    
+        return () => unsubscribe();
+      }, []);
 
 
 
