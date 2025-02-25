@@ -16,9 +16,97 @@ app.use(express.json());
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
 
-
 // Routes
 app.use("/api/auth", authRoutes);
+
+
+// Define the /api/transactions/send-money route
+const User = require("./models/User"); // Import the User model
+
+// API to get user mobile number by email
+app.get("/api/users/get-mobile", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ mobile: user.mobile });
+  } catch (error) {
+    console.error("Error fetching user mobile:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+const Transaction = require("./models/Transaction"); // Import the Transaction model
+
+app.post("/api/transactions/send-money", async (req, res) => {
+  const { senderMobile, recipientMobile, amount } = req.body;
+
+  // Basic validation
+  if (!senderMobile || !recipientMobile || !amount) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  if (amount < 50) {
+    return res.status(400).json({ message: "Minimum amount is 50 Taka." });
+  }
+
+  try {
+    // Find sender and recipient users in the database
+    const sender = await User.findOne({ mobile: senderMobile });
+    const recipient = await User.findOne({ mobile: recipientMobile });
+
+    if (!sender) {
+      return res.status(404).json({ message: "Sender not found." });
+    }
+    if (!recipient) {
+      return res.status(404).json({ message: "Recipient not found." });
+    }
+
+    // Check if sender has enough balance
+    if (sender.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance." });
+    }
+
+    // Transaction Fee (optional)
+    const fee = Math.max(5, amount * 0.01); // Example: 1% fee, minimum 5 Taka
+
+    // Update sender's and recipient's balance
+    sender.balance -= amount + fee;
+    recipient.balance += amount;
+
+    // Save the updated users
+    await sender.save();
+    await recipient.save();
+
+    // Save transaction details to the database
+    const transaction = new Transaction({
+      sender: sender._id,
+      recipient: recipient._id,
+      amount,
+      fee,
+      transactionType: "send",
+    });
+
+    await transaction.save();
+
+    res.status(200).json({
+      message: `Transaction successful! Transaction ID: ${transaction.transactionId}.`,
+    });
+  } catch (error) {
+    console.error("Error processing transaction:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
