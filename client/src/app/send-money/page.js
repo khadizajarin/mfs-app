@@ -22,7 +22,7 @@ export default function SendMoney() {
 
     const fetchSenderMobile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/get-mobile?email=${senderEmail}`);
+        const response = await fetch(`http://localhost:5000/api/users/get-mobile?email=${senderEmail}`,{mode :'no-cors'});
         const data = await response.json();
         if (response.ok) {
           setSenderMobile(data.mobile); // Set sender's mobile number

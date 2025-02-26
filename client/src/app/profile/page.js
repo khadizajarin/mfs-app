@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Navbar from "../homepage/navbar";
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 export default function ProfilePage() {
   const { user, logOut, setUser } = useContext(AuthContext);
@@ -23,8 +24,8 @@ export default function ProfilePage() {
   
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`https://mfs-633flhnb8-khadizajarins-projects.vercel.app/api/users`, {
-          params: { email: user.email },
+        const response = await axios.get(`https://mfs-hw0a5h057-khadizajarins-projects.vercel.app/api/users`, {
+          params: { email: user.email }
         });
   
         setUserData(response.data);
