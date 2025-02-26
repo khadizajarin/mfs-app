@@ -9,8 +9,29 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const app = express();
 
 // Middleware
-// Allow ALL origins (for debugging)
-app.use(cors());
+const cors = require("cors");
+
+const allowedOrigins = [
+  "http://localhost:3000",  // ✅ Allow local frontend
+  "https://your-frontend-domain.vercel.app" // ✅ Allow deployed frontend
+];
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // ⚠️ Use a specific domain instead of "*"
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // ✅ Allow cookies & authentication headers
+  })
+);
+
 app.use(express.json());
 
 
