@@ -53,6 +53,7 @@ const AuthProvider = ({children}) => {
                 setUser({
                   ...firebaseUser,
                   accountType: data.user.accountType, // Add role from database
+                  balance: data.user.balance
                 });
               } else {
                 setUser(firebaseUser);

@@ -77,7 +77,7 @@ export default function Navbar() {
         <ul className="hidden md:flex space-x-6">
           {navItems[userRole]?.map((item) => (
             <li key={item.name}>
-              <Link href={item.href} className="hover:text-gray-900 hover:border-2 hover:border-gray-400 rounded-lg px-4 py-2 transition-all duration-300 ">
+              <Link href={item.href} className="hover:text-gray-900 text-bold hover:border-2 hover:border-gray-400 rounded-lg px-4 py-2 transition-all duration-300 ">
                 {item.name}
               </Link>
             </li>
@@ -88,7 +88,7 @@ export default function Navbar() {
         {user && (
           <div className="flex flex-row justify-center items-center gap-3 text-center">
             <p className="text-sm text-gray-700">Logged in as {userRole.charAt(0).toUpperCase() + userRole.slice(1)}</p>
-            <Button onClick={handleLogOut} className=" px-4 py-2 rounded-md text-white">
+            <Button onClick={handleLogOut} className=" px-4 py-2 rounded-md ">
               Logout
             </Button>
           </div>

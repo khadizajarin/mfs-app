@@ -315,6 +315,19 @@ app.get("/api/your-transactions", async (req, res) => {
   }
 });
 
+app.get("/api/total-money", async (req, res) => {
+  try {
+    const users = await User.find({}, "balance"); // Fetch only balance field
+
+    const totalMoney = users.reduce((sum, user) => sum + (user.balance || 0), 0); // Sum balances
+
+    res.json({ total: totalMoney });
+  } catch (error) {
+    console.error("Error fetching total money:", error);
+    res.status(500).json({ message: "Error fetching total money" });
+  }
+});
+
 app.post("/api/transactions/send-money", async (req, res) => {
   const { senderMobile, recipientMobile, amount } = req.body;
 

@@ -11,8 +11,6 @@ const TransactionsPage = () => {
   const { user } = useContext(AuthContext);
   const router = useRouter();
 
-  console.log("Logged-in user:", user);
-
   useEffect(() => {
     const fetchUserTransactions = async () => {
       if (!user?.email) {
@@ -38,6 +36,13 @@ const TransactionsPage = () => {
   
     fetchUserTransactions();
   }, [user]);
+   // Dynamically set the table header background color based on user role
+   const theadColor =
+   user?.accountType === "user"
+     ? "bg-[#F7CFD8]"
+     : user?.accountType === "agent"
+     ? "bg-[#F4F8D3]"
+     : "bg-[#A6F1E0]"; // default for admin or others
   
   return (
     <div>
@@ -46,7 +51,7 @@ const TransactionsPage = () => {
         <h2 className="text-xl font-semibold mb-4">Transactions</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-300 rounded-lg">
-            <thead className="bg-[#A6F1E0] bg-opacity-50">
+            <thead className={`${theadColor} bg-opacity-50`}>
               <tr>
                 <th className="border px-4 py-2 text-left">Transaction ID</th>
                 <th className="border px-4 py-2 text-left">Amount</th>
