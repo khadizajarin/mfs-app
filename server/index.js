@@ -263,6 +263,57 @@ app.get('/api/users/approved', async (req, res) => {
   }
 });
 
+app.get("/api/users", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+app.get("/api/your-transactions", async (req, res) => {
+  try {
+    const { email } = req.query; // Expect email as query parameter
+
+    if (!email) {
+      return res.status(400).json({ message: "User email is required" });
+    }
+
+    // Find the user in the database using the email
+    const userRecord = await User.findOne({ email });
+    if (!userRecord) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Use the found user's _id (an ObjectId) for filtering
+    const userObjectId = userRecord._id;
+
+    // Filter transactions where sender or recipient matches userObjectId
+    const transactions = await Transaction.find({
+      $or: [
+        { sender: userObjectId },
+        { recipient: userObjectId }
+      ]
+    }).populate("sender recipient", "mobile"); // Populate mobile numbers for display
+
+    res.json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
 
 app.post("/api/transactions/send-money", async (req, res) => {
   const { senderMobile, recipientMobile, amount } = req.body;

@@ -56,7 +56,7 @@ export default function Navbar() {
       { name: "Dashboard", href: "/admin" },
       { name: "Manage Users", href: "/manage-users" },
       { name: "Approve Agents", href: "/approved-agents" },
-      { name: "Transactions", href: "/transactions" },
+      { name: "Transactions", href: "/all-transactions" },
       { name: "System Reports", href: "/system-reports" },
     ],
     guest: [
