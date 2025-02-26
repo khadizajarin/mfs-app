@@ -126,64 +126,94 @@ app.post("/api/transactions/cash-out", async (req, res) => {
 
 app.post("/api/transactions/cash-in", async (req, res) => {
   const { userMobile, agentMobile, amount, pin } = req.body;
+  const amt = Number(amount);
 
-  // Validate input
-  if (!userMobile || !agentMobile || !amount || !pin) {
+  console.log("🔹 Cash-In Request Received:");
+  console.log("User Mobile:", userMobile);
+  console.log("Agent Mobile:", agentMobile);
+  console.log("Amount:", amt);
+  console.log("Entered PIN:", pin);
+
+  // ✅ Validate input
+  if (!userMobile || !agentMobile || !amt || !pin) {
+    console.log("❌ Missing Required Fields");
     return res.status(400).json({ message: "All fields are required." });
   }
-
-  if (amount < 50) {
+  if (amt < 50) {
+    console.log("❌ Amount too low:", amt);
     return res.status(400).json({ message: "Minimum cash-in amount is 50 Taka." });
   }
 
   try {
-    // Find user and agent
+    // ✅ Find user and agent
     const user = await User.findOne({ mobile: userMobile });
     const agent = await User.findOne({ mobile: agentMobile, accountType: "agent" });
 
-    if (!user) return res.status(404).json({ message: "User not found." });
-    if (!agent) return res.status(404).json({ message: "Agent not found or incorrect role." });
+    console.log("🔹 Fetched User:", user);
+    console.log("🔹 Fetched Agent:", agent);
 
-    // Verify agent PIN
-    const bcrypt = require("bcrypt");
-    const isPinValid = await bcrypt.compare(pin, agent.pin);
-    if (!isPinValid) {
-      return res.status(400).json({ message: "Incorrect PIN." });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (!agent) {
+      return res.status(404).json({ message: "Agent not found or incorrect role." });
     }
 
-    // Check if the agent has enough balance
-    if (agent.balance < amount) {
+    // ✅ Verify agent's PIN
+    const bcrypt = require("bcrypt");
+    if (!agent.pin) {
+      return res.status(500).json({ message: "Agent PIN is missing. Contact support." });
+    }
+
+    const isPinValid = await bcrypt.compare(pin.toString(), agent.pin);
+
+    if (!isPinValid) {
+      return res.status(400).json({ message: "Incorrect agent PIN. Please try again." });
+    }
+
+    // ✅ Check if agent has enough balance
+    if (agent.balance < amt) {
       return res.status(400).json({ message: "Agent has insufficient balance." });
     }
 
-    // Update balances
-    user.balance += amount;
-    agent.balance -= amount; // Deduct from agent
+    // ✅ Calculate transaction fee (for now, assume no fee for cash-in)
+    const fee = 0;
 
-    // Save the updated balances
+    // ✅ Update balances
+    user.balance += amt;
+    agent.balance -= amt;
+
+    // ✅ Save updated balances
     await user.save();
     await agent.save();
 
-    // Optionally, save transaction details
+    // ✅ Save transaction details
     const transaction = new Transaction({
       sender: agent._id,
       recipient: user._id,
-      amount,
-      transactionType: "cash-in",
+      amount: amt,
+      fee: fee, // ✅ Added missing fee field
+      transactionType: "cash-in", // ✅ Ensure "cash-in" is a valid enum
     });
 
     await transaction.save();
 
+    console.log("✅ Transaction Saved:", transaction);
+
     res.status(200).json({
-      message: `Cash-in successful! ${amount} Taka added to user balance.`,
+      message: `Cash-in successful! ${amt} Taka added to user balance.`,
       transactionId: transaction.transactionId,
     });
 
   } catch (error) {
-    console.error("Error processing cash-in:", error);
+    console.error("❌ Error processing cash-in:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 });
+
+
+
+
 
 // API to get agent details (mobile and PIN) by email
 app.get("/api/users/get-agent", async (req, res) => {
@@ -217,19 +247,6 @@ app.get("/api/users/get-agent", async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 });
-
-// app.get("/api/transactions", async (req, res) => {
-//   try {
-//     const transactions = await Transaction.find()
-//       .select("_id sender recipient amount fee transactionType transactionId date");
-
-//     res.status(200).json(transactions);
-//   } catch (error) {
-//     console.error("Error fetching transactions:", error);
-//     res.status(500).json({ message: "Internal server error." });
-//   }
-// });
-
 
 app.get('/api/transactions', async (req, res) => {
   try {

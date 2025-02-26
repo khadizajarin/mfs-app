@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose"); // ✅ Added this line
+
 
 // POST /api/transactions/send-money
 router.post("/send-money", async (req, res) => {
@@ -67,6 +69,8 @@ router.post("/send-money", async (req, res) => {
     res.status(500).json({ message: "Server error.", error });
   }
 });
+
+//GET all transactions
 router.get("/transactions", async (req, res) => {
   try {
     const transactions = await Transaction.find().populate('sender recipient');

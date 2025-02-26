@@ -3,6 +3,7 @@ import { AuthContext } from "@/lib/AuthProvider";
 import { useState, useEffect, useContext } from "react";
 import Swal from "sweetalert2";
 import Navbar from "../homepage/navbar";
+import Button from "../commoncomps/Button";
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
@@ -37,9 +38,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div >
-      <Navbar />
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 mt-6">
+    <div className=" flex items-center justify-center mb-28 mt-6">
+      <div className="w-[40rem]  mx-auto bg-white shadow-lg rounded-lg p-6 ">
         <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">Admin Dashboard</h2>
         <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">Pending Agents</h3>
 
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
               <li key={agent._id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow">
                 <span className="text-gray-800 font-medium">{agent.name} ({agent.email})</span>
                 <Button
-                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+                  className=" px-4 py-2 rounded-md hover:bg-green-600 transition"
                   onClick={() => approveAgent(agent.email)}
                 >
                   Approve

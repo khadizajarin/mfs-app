@@ -6,17 +6,37 @@ import Swal from "sweetalert2";
 import PrivateRoute from "../components/PrivateRoute";
 import Navbar from "./navbar";
 import Button from "../commoncomps/Button";
+import AdminDashboard from "../admin/page";
 
 export default function Homepage() {
   const router = useRouter();
-  const { user, logOut } = useContext(AuthContext);
+  const { user, logOut, setUser } = useContext(AuthContext);
   const [isClient, setIsClient] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const [totalSystemBalance, setTotalSystemBalance] = useState(0);
+  const [totalSystemBalance, setTotalSystemBalance] = useState(0); // ✅ Store total money
+  const [adminIncome, setAdminIncome] = useState(0); // ✅ Store admin income
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user?.email) return;
+      try {
+        const response = await fetch(`http://localhost:5000/api/users?email=${user.email}`);
+        const data = await response.json();
+        if (response.ok) {
+          setUser(data); // ✅ Update user globally in AuthContext
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+  
+    fetchUserData();
+  }, [user?.email]); // ✅ Runs when email changes
+  
 
   useEffect(() => {
     if (user?.accountType === "admin") {
@@ -24,9 +44,10 @@ export default function Homepage() {
         try {
           const response = await fetch("http://localhost:5000/api/total-money");
           const data = await response.json();
-  
+
           if (response.ok) {
-            setTotalSystemBalance(data.total); // ✅ Directly use the "total" from API response
+            setTotalSystemBalance(data.total); // ✅ Total system money
+            setUser(data);
           } else {
             setTotalSystemBalance(0);
           }
@@ -35,11 +56,10 @@ export default function Homepage() {
           setTotalSystemBalance(0);
         }
       };
-  
+
       fetchTotalBalance();
     }
   }, [user]); // ✅ Runs when user changes
-  
 
   const handleLogOut = () => {
     logOut()
@@ -54,9 +74,13 @@ export default function Homepage() {
 
   if (!isClient || !user) return null;
 
-  // ✅ Identify the user role and balance
+  // ✅ Identify user role and balance
   const userRole = user.accountType || "user"; // Default to user
-  const userBalance = userRole === "admin" ? totalSystemBalance : user.balance || 0; // Default to 0
+  const userBalance = user?.balance || 0; // ✅ Show only their balance
+  const balanceText =
+    userRole === "admin"
+      ? `Income: ${userBalance} Taka | Total Money: ${totalSystemBalance} Taka` // ✅ Show both for admin
+      : `Balance: ${userBalance} Taka`; // ✅ Show balance for others
 
   // ✅ Define background colors based on role
   const roleColors = {
@@ -64,12 +88,6 @@ export default function Homepage() {
     agent: "bg-[#F4F8D3]", // Light Green
     admin: "bg-[#A6F1E0]", // Light Teal
   };
-
-  // ✅ Balance Display Logic
-  const balanceText =
-    userRole === "admin"
-      ? `Total Money in System: ${userBalance} Taka`
-      : `Balance: ${userBalance} Taka`;
 
   // ✅ Role-specific content
   const roleContent = {
@@ -96,14 +114,17 @@ export default function Homepage() {
     ],
   };
 
- 
   return (
     <PrivateRoute>
       <Navbar />
-      <div className="lg:min-h-screen flex items-center justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-7xl">
 
-          <div className="flex flex-row space-x-3 items-center" >
+      {
+        userRole === "admin" && <AdminDashboard />
+      }
+
+      <div className="h-[39rem] flex items-center justify-center">
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-7xl">
+          <div className="flex flex-row space-x-3 items-center">
             <div>
               <h1 className="text-2xl font-bold text-center text-gray-800">Welcome</h1>
               <p className="text-gray-600 mt-2">You are logged in as:</p>
@@ -114,12 +135,10 @@ export default function Homepage() {
               <button
                 onClick={() => setShowBalance(!showBalance)}
                 className={`${roleColors[userRole]} px-4 py-2 rounded-md mt-4 transition-all`}
-                >
+              >
                 <span
                   className={`relative inline-block font-semibold text-gray-500 rounded-lg transition-all duration-500 ${
-                    showBalance
-                      ? "blur-0 translate-x-0 opacity-100"
-                      : "blur-md translate-x-6 opacity-50"
+                    showBalance ? "blur-0 translate-x-0 opacity-100" : "blur-md translate-x-6 opacity-50"
                   }`}
                 >
                   {balanceText}
@@ -127,9 +146,6 @@ export default function Homepage() {
               </button>
             </div>
           </div>
-          
-          {/* ✅ Balance Button */}
-          
 
           <div className="mt-6 grid grid-cols-2 gap-6 text-gray-700">
             {roleContent[userRole]?.map((item) => (
