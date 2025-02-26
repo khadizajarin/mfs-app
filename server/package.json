@@ -20,6 +20,7 @@
     "mongoose": "^8.10.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "vercel": "^41.2.2"
   }
 }

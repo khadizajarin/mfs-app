@@ -21,7 +21,7 @@ const TransactionsPage = () => {
       console.log("Fetching transactions for email:", user.email);
   
       try {
-        const response = await fetch(`http://localhost:5000/api/your-transactions?email=${encodeURIComponent(user.email)}`);
+        const response = await fetch(`https://mfs-kqd9g450m-khadizajarins-projects.vercel.app/your-transactions?email=${encodeURIComponent(user.email)}`);
         const data = await response.json();
   
         if (response.ok) {
