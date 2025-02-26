@@ -24,7 +24,7 @@ export default function ProfilePage() {
   
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`https://mfs-hw0a5h057-khadizajarins-projects.vercel.app/api/users`, {
+        const response = await axios.get(`https://mfs-3b9bdidim-khadizajarins-projects.vercel.app/api/users`, {
           params: { email: user.email }
         });
   
