@@ -23,7 +23,7 @@ export default function ProfilePage() {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users?email=${user.email}`);
+        const response = await fetch(`https://mfs-p9sr2fgzp-khadizajarins-projects.vercel.app/api/users?email=${user.email}`);
         const data = await response.json();
         if (response.ok) {
           setUserData(data);

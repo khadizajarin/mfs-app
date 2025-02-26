@@ -9,7 +9,6 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const app = express();
 
 // Middleware
-const cors = require("cors");
 
 const allowedOrigins = [
   "http://localhost:3000",  // ✅ Allow local frontend
