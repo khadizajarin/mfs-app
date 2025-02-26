@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { AuthContext } from "@/lib/AuthProvider";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import Button from "./commoncomps/Button";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -75,8 +76,6 @@ export default function Home() {
 
   return (
     <div>
-      <h1>React + Node.js Connection</h1>
-      <p>{message}</p>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
@@ -126,13 +125,13 @@ export default function Home() {
                 </div>
 
                 {/* Login Button */}
-                <button
+                <Button
                   type="submit"
-                  className="btn btn-primary w-full mt-6"
+                  className="w-full mt-6 bg-[#C96868]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Logging in..." : "Login"}
-                </button>
+                </Button>
               </Form>
             )}
           </Formik>
@@ -140,7 +139,7 @@ export default function Home() {
           {/* Register Link */}
           <p className="text-sm text-center mt-4">
             Don't have an account?{" "}
-            <Link href="/register" className="text-blue-500">
+            <Link href="/register" className="text-[#C96868]">
               Sign up
             </Link>
           </p>

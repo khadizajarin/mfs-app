@@ -140,7 +140,6 @@ app.post("/api/transactions/cash-in", async (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
   if (amt < 50) {
-    console.log("❌ Amount too low:", amt);
     return res.status(400).json({ message: "Minimum cash-in amount is 50 Taka." });
   }
 

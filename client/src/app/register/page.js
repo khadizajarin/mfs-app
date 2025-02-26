@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { AuthContext } from "@/lib/AuthProvider";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup"; // For validation (optional)
+import Button from "../commoncomps/Button";
 
 export default function RegisterPage() {
   const { createUser } = useContext(AuthContext);
@@ -51,8 +52,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100"> 
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-96">
         <h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
 
         <Formik
@@ -78,8 +79,8 @@ export default function RegisterPage() {
                     name="accountType"
                     className="select select-bordered w-full mt-1"
                     >
-                    <option value="user">User</option>
-                    <option value="agent">Agent</option>
+                    <option value="user" className="bg-[#F7CFD8] text-gray-700 w-full mt-1">User</option>
+                    <option value="agent" className="bg-[#F4F8D3] text-gray-700 w-full mt-1">Agent</option>
                     </Field>
                 </div>
 
@@ -165,13 +166,13 @@ export default function RegisterPage() {
                 )}
 
                 {/* Register Button */}
-                <button
+                <Button
                     type="submit"
-                    className={`btn btn-primary w-full mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`bg-[#c66565] text-white w-full mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                     disabled={isSubmitting || loading} // Disable while submitting
                 >
                     {loading || isSubmitting ? "Registering..." : `Register as ${values.accountType.charAt(0).toUpperCase() + values.accountType.slice(1)}`}
-                </button>
+                </Button>
                 </Form>
             )}
             </Formik>
@@ -179,10 +180,11 @@ export default function RegisterPage() {
 
         {/* Login Link */}
         <p className="text-sm text-center mt-4">
-          Already have an account? <Link href="/" className="text-blue-500">Login</Link>
+          Already have an account? <Link href="/" className="text-[#C96868]">Login</Link>
         </p>
       </div>
     </div>
+      
   );
 }
 

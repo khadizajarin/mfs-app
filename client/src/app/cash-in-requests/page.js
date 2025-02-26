@@ -4,8 +4,9 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import Navbar from "../homepage/navbar";
 import { AuthContext } from "@/lib/AuthProvider";
+import Button from "../commoncomps/Button";
 
-export default function CashOut() {
+export default function CashIn() {
   const { user } = useContext(AuthContext);
   const [userMobile, setUserMobile] = useState(""); // User's mobile number
   const [agentMobile, setAgentMobile] = useState(""); // Agent's mobile number
@@ -47,14 +48,6 @@ export default function CashOut() {
       return Swal.fire("Error", "Please fill in all fields and ensure the amount is at least 100 Taka.", "error");
     }
 
-    // console.log(pin == agentPin);
-    // console.log(pin)
-    // console.log(agentPin)
-    // // ✅ Compare PIN with the actual agent PIN from the database
-    // if (pin !== agentPin) {
-    //   return Swal.fire("Error", "Incorrect agent PIN. Please try again.", "error");
-    // }
-
     setIsSubmitting(true);
 
     try {
@@ -70,32 +63,29 @@ export default function CashOut() {
       });
 
       // ✅ Check response status
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Error response:", errorData);
-        throw new Error(errorData.message || "Failed to process cash-in.");
-      }
-
       const data = await response.json();
-      console.log("Success response:", data);
+      if (!response.ok) throw new Error(data.message);
 
       Swal.fire("Success", data.message, "success");
-
-      // ✅ Redirect to homepage after success
       router.push("/homepage");
     } catch (error) {
-      console.error("Error during cash-in:", error);
       Swal.fire("Error", error.message, "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Role-based button colors
+  const roleColors = {
+    user: "bg-[#F7CFD8] hover:bg-[#e7b6c2]",
+    agent: "bg-[#F4F8D3] hover:bg-[#e0e8b5]",
+  };
+
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+      <div className=" flex items-center justify-center pt-8">
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-7xl">
           <h2 className="text-2xl font-bold text-center text-gray-800">Cash-In</h2>
           <form onSubmit={handleCashIn}>
             {/* Agent Mobile (Disabled) */}
@@ -149,13 +139,13 @@ export default function CashOut() {
             </div>
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
-              className="btn btn-primary w-full mt-6"
+              className={`w-full mt-6 ${roleColors[user?.accountType] || "bg-gray-300"}`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Processing..." : "Cash-In to User"}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

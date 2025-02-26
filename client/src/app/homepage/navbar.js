@@ -21,7 +21,7 @@ export default function Navbar() {
     user: "bg-[#F7CFD8]", // Light Pink
     agent: "bg-[#F4F8D3]", // Light Green
     admin: "bg-[#A6F1E0]", // Light Teal
-    guest: "bg-blue-600", // Default Blue
+    guest: "bg-[#C96868]", // Default Blue
   };
 
   // Logout handler

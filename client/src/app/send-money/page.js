@@ -4,18 +4,19 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/lib/AuthProvider";
 import Navbar from "../homepage/navbar";
+import Button from "../commoncomps/Button";
 
 export default function SendMoney() {
   const { user } = useContext(AuthContext);
-  const [senderMobile, setSenderMobile] = useState(""); // Store the sender's mobile number
+  const [senderMobile, setSenderMobile] = useState(""); // Store sender's mobile number
   const [recipientMobile, setRecipientMobile] = useState("");
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const senderEmail = user?.email; // Retrieve the sender's email from AuthContext
+  const senderEmail = user?.email; // Retrieve sender's email from AuthContext
 
-  // Fetch the sender's mobile number from the backend
+  // Fetch sender's mobile number from backend
   useEffect(() => {
     if (!senderEmail) return;
 
@@ -24,7 +25,7 @@ export default function SendMoney() {
         const response = await fetch(`http://localhost:5000/api/users/get-mobile?email=${senderEmail}`);
         const data = await response.json();
         if (response.ok) {
-          setSenderMobile(data.mobile); // Set the sender's mobile number
+          setSenderMobile(data.mobile); // Set sender's mobile number
         } else {
           throw new Error(data.message || "Failed to fetch mobile number");
         }
@@ -68,11 +69,17 @@ export default function SendMoney() {
     }
   };
 
+  // Role-based button colors
+  const roleColors = {
+    user: "bg-[#F7CFD8] hover:bg-[#e7b6c2]",
+    agent: "bg-[#F4F8D3] hover:bg-[#e0e8b5]",
+  };
+
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm">
+      <div className="flex items-center justify-center pt-8">
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-7xl">
           <h2 className="text-2xl font-bold text-center text-gray-800">Send Money</h2>
           <form onSubmit={handleSendMoney}>
             {/* Sender Mobile Number Display */}
@@ -110,9 +117,13 @@ export default function SendMoney() {
               />
             </div>
             {/* Submit Button */}
-            <button type="submit" className="btn btn-primary w-full mt-6" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className={`w-full mt-6 ${roleColors[user?.accountType] || "bg-gray-300"}`}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Sending..." : "Send Money"}
-            </button>
+            </Button>
           </form>
         </div>
       </div>
