@@ -2,29 +2,26 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Navbar from "../homepage/navbar";
+import axios from "axios";
 
 const ApprovedAgents = () => {
   const [agents, setAgents] = useState([]);
 
-   useEffect(() => {
+  useEffect(() => {
+    const fetchApprovedAgents = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/agents/approved");
   
-      const fetchUserMobile = async () => {
-        try {
-          const response = await fetch("http://localhost:5000/api/agents/approved");
-          const data = await response.json();
-          if (response.ok) {
-            setAgents(data);
-            console.log(agents)
-          } else {
-            throw new Error(data.message || "Failed to fetch mobile number");
-          }
-        } catch (error) {
-          Swal.fire("Error", error.message, "error");
-        }
-      };
+        setAgents(response.data); // ✅ Set approved agents
+        console.log(response.data); // ✅ Log fetched data
+      } catch (error) {
+        Swal.fire("Error", error.response?.data?.message || "Failed to fetch approved agents", "error");
+      }
+    };
   
-      fetchUserMobile();
-    }, []);
+    fetchApprovedAgents();
+  }, []);
+  
 
   return (
     <div>

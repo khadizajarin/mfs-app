@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "../homepage/navbar";
 import { AuthContext } from "@/lib/AuthProvider";
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 export default function CashOut() {
   const { user } = useContext(AuthContext);
@@ -30,66 +31,53 @@ export default function CashOut() {
   // ✅ Fetch the user's mobile number from the backend
   useEffect(() => {
     if (!senderEmail) return;
-
+  
     const fetchUserMobile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/get-mobile?email=${senderEmail}`);
-        const data = await response.json();
-        if (response.ok) {
-          setUserMobile(data.mobile); // Set the user's mobile number
-        } else {
-          throw new Error(data.message || "Failed to fetch mobile number");
-        }
+        const response = await axios.get(`http://localhost:5000/api/users/get-mobile`, {
+          params: { email: senderEmail },
+        });
+  
+        setUserMobile(response.data.mobile); // Set the user's mobile number
       } catch (error) {
-        Swal.fire("Error", error.message, "error");
+        Swal.fire("Error", error.response?.data?.message || "Failed to fetch mobile number", "error");
       }
     };
-
+  
     fetchUserMobile();
   }, [senderEmail]);
-
+  
   const handleCashOut = async (e) => {
     e.preventDefault();
-
+  
     console.log("Agent Mobile:", agentMobile); // Check the value of agentMobile here
-
+  
     if (!userMobile || !agentMobile || !amount || amount < 100 || !pin) {
       return Swal.fire("Error", "Please fill in all fields and ensure the amount is at least 100 Taka.", "error");
     }
-
+  
     setIsSubmitting(true);
-
+  
     try {
-      const response = await fetch("http://localhost:5000/api/transactions/cash-out", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userMobile,
-          agentMobile,
-          amount: Number(amount),
-          pin,
-        }),
+      const response = await axios.post("http://localhost:5000/api/transactions/cash-out", {
+        userMobile,
+        agentMobile,
+        amount: Number(amount),
+        pin,
       });
-
-      // ✅ Check if response status is OK
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Error response:", errorData);
-        throw new Error(errorData.message || "Failed to process cash-out.");
-      }
-
-      const data = await response.json();
-      console.log("Success response:", data);
-
-      Swal.fire("Success", data.message, "success");
+  
+      console.log("Success response:", response.data);
+  
+      Swal.fire("Success", response.data.message, "success");
       router.push("/homepage");
     } catch (error) {
       console.error("Error during cash-out:", error);
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", error.response?.data?.message || "Failed to process cash-out.", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <div className="">

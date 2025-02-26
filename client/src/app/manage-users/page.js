@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../homepage/navbar";
 import Swal from "sweetalert2";
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -10,21 +11,17 @@ const UsersPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users/approved");
-        const data = await response.json();
-        if (response.ok) {
-          setUsers(data);
-        } else {
-          throw new Error(data.message || "Failed to fetch users");
-        }
+        const response = await axios.get("http://localhost:5000/api/users/approved");
+  
+        setUsers(response.data);
       } catch (error) {
-        Swal.fire("Error", error.message, "error");
+        Swal.fire("Error", error.response?.data?.message || "Failed to fetch users", "error");
       }
     };
-
+  
     fetchUsers();
   }, []);
-
+  
   return (
     <div>
       <Navbar />

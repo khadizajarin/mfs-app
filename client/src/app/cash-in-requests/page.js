@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "../homepage/navbar";
 import { AuthContext } from "@/lib/AuthProvider";
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 export default function CashIn() {
   const { user } = useContext(AuthContext);
@@ -21,24 +22,23 @@ export default function CashIn() {
   // Fetch the agent's mobile and PIN from the backend
   useEffect(() => {
     if (!senderEmail) return;
-
+  
     const fetchAgentInfo = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/users/get-agent?email=${senderEmail}`);
-        const data = await response.json();
-        if (response.ok) {
-          setAgentMobile(data.mobile); // ✅ Set agent's mobile number
-          setAgentPin(data.pin); // ✅ Set agent's PIN from database
-        } else {
-          throw new Error(data.message || "Failed to fetch agent info");
-        }
+        const response = await axios.get(`http://localhost:5000/api/users/get-agent`, {
+          params: { email: senderEmail },
+        });
+  
+        setAgentMobile(response.data.mobile); // ✅ Set agent's mobile number
+        setAgentPin(response.data.pin); // ✅ Set agent's PIN from database
       } catch (error) {
-        Swal.fire("Error", error.message, "error");
+        Swal.fire("Error", error.response?.data?.message || "Failed to fetch agent info", "error");
       }
     };
-
+  
     fetchAgentInfo();
   }, [senderEmail]);
+  
 
   const handleCashIn = async (e) => {
     e.preventDefault();
@@ -51,28 +51,23 @@ export default function CashIn() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/transactions/cash-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agentMobile,
-          userMobile,
-          amount: Number(amount),
-          pin, // ✅ Send the entered PIN
-        }),
+      const response = await axios.post("http://localhost:5000/api/transactions/cash-in", {
+        agentMobile,
+        userMobile,
+        amount: Number(amount),
+        pin, // ✅ Send the entered PIN
+      }, {
+        headers: { "Content-Type": "application/json" }
       });
-
-      // ✅ Check response status
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
-      Swal.fire("Success", data.message, "success");
+    
+      Swal.fire("Success", response.data.message, "success");
       router.push("/homepage");
     } catch (error) {
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", error.response?.data?.message || "Failed to process cash-in.", "error");
     } finally {
       setIsSubmitting(false);
     }
+    
   };
 
   // Role-based button colors

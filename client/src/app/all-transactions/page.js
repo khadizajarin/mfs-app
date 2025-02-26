@@ -3,31 +3,27 @@ import { AuthContext } from '@/lib/AuthProvider';
 import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../homepage/navbar';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
   const { user, isAuthenticated } = useContext(AuthContext);
 
   
-     useEffect(() => {
-    
-        const fetchUserMobile = async () => {
-          try {
-            const response = await fetch("http://localhost:5000/api/transactions");
-            const data = await response.json();
-            if (response.ok) {
-              setTransactions(data);
-              console.log(transactions)
-            } else {
-              throw new Error(data.message || "Failed to fetch mobile number");
-            }
-          } catch (error) {
-            Swal.fire("Error", error.message, "error");
-          }
-        };
-    
-        fetchUserMobile();
-      }, []);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/transactions");
+
+        setTransactions(response.data); // ✅ Set transactions state
+        console.log(response.data); // ✅ Log fetched transactions
+      } catch (error) {
+        Swal.fire("Error", error.response?.data?.message || "Failed to fetch transactions", "error");
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   return (
     <div>

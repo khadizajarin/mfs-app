@@ -47,26 +47,20 @@ export default function SendMoney() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/transactions/send-money", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          senderMobile,
-          recipientMobile,
-          amount: Number(amount),
-        }),
+      const response = await axios.post("http://localhost:5000/api/transactions/send-money", {
+        senderMobile,
+        recipientMobile,
+        amount: Number(amount),
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
-      Swal.fire("Success", data.message, "success");
+    
+      Swal.fire("Success", response.data.message, "success");
       router.push("/homepage");
     } catch (error) {
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", error.response?.data?.message || error.message, "error");
     } finally {
       setIsSubmitting(false);
     }
+    
   };
 
   // Role-based button colors

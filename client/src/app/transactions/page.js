@@ -21,21 +21,19 @@ const TransactionsPage = () => {
       console.log("Fetching transactions for email:", user.email);
   
       try {
-        const response = await fetch(`http://localhost:5000/api/your-transactions?email=${encodeURIComponent(user.email)}`);
-        const data = await response.json();
+        const response = await axios.get(`http://localhost:5000/api/your-transactions`, {
+          params: { email: user.email },
+        });
   
-        if (response.ok) {
-          setTransactions(data);
-        } else {
-          throw new Error(data.message || "Failed to fetch transactions");
-        }
+        setTransactions(response.data);
       } catch (error) {
-        Swal.fire("Error", error.message, "error");
+        Swal.fire("Error", error.response?.data?.message || error.message, "error");
       }
     };
   
     fetchUserTransactions();
   }, [user]);
+  
    // Dynamically set the table header background color based on user role
    const theadColor =
    user?.accountType === "user"

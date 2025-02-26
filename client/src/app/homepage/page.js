@@ -7,6 +7,7 @@ import PrivateRoute from "../components/PrivateRoute";
 import Navbar from "./navbar";
 import Button from "../commoncomps/Button";
 import AdminDashboard from "../admin/page";
+import axios from "axios";
 
 export default function Homepage() {
   const router = useRouter();
@@ -24,42 +25,37 @@ export default function Homepage() {
     const fetchUserData = async () => {
       if (!user?.email) return;
       try {
-        const response = await fetch(`http://localhost:5000/api/users?email=${user.email}`);
-        const data = await response.json();
-        if (response.ok) {
-          setUser(data); // ✅ Update user globally in AuthContext
-        }
+        const response = await axios.get(`http://localhost:5000/api/users`, {
+          params: { email: user.email },
+        });
+  
+        setUser(response.data); // ✅ Update user globally in AuthContext
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching user data:", error.response?.data?.message || error.message);
       }
     };
   
     fetchUserData();
   }, [user?.email]); // ✅ Runs when email changes
   
-
   useEffect(() => {
     if (user?.accountType === "admin") {
       const fetchTotalBalance = async () => {
         try {
-          const response = await fetch("http://localhost:5000/api/total-money");
-          const data = await response.json();
-
-          if (response.ok) {
-            setTotalSystemBalance(data.total); // ✅ Total system money
-            setUser(data);
-          } else {
-            setTotalSystemBalance(0);
-          }
+          const response = await axios.get("http://localhost:5000/api/total-money");
+  
+          setTotalSystemBalance(response.data.total || 0); // ✅ Total system money
+          setUser(response.data);
         } catch (error) {
-          console.error("Error fetching total system balance:", error);
+          console.error("Error fetching total system balance:", error.response?.data?.message || error.message);
           setTotalSystemBalance(0);
         }
       };
-
+  
       fetchTotalBalance();
     }
   }, [user]); // ✅ Runs when user changes
+  
 
   const handleLogOut = () => {
     logOut()

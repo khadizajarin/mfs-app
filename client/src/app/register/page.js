@@ -7,6 +7,7 @@ import { AuthContext } from "@/lib/AuthProvider";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup"; // For validation (optional)
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 export default function RegisterPage() {
   const { createUser } = useContext(AuthContext);
@@ -30,26 +31,23 @@ export default function RegisterPage() {
     try {
       // Call the createUser function from AuthContext
       await createUser(values.email, values.password); // Pass email and password correctly
-
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, accountType: values.accountType }),
+  
+      const response = await axios.post("http://localhost:5000/api/auth/register", {
+        ...values,
+        accountType: values.accountType,
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
+  
       router.push("/homepage");
       Swal.fire("Success!", "Account created successfully!", "success");
-
+  
     } catch (error) {
-      console.error("Signup error:", error);
-      Swal.fire("Error", error.message, "error");
+      console.error("Signup error:", error.response?.data?.message || error.message);
+      Swal.fire("Error", error.response?.data?.message || error.message, "error");
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100"> 

@@ -20,22 +20,23 @@ export default function ProfilePage() {
   // ✅ Fetch user details from the backend
   useEffect(() => {
     if (!user?.email) return;
-
+  
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`https://mfs-p9sr2fgzp-khadizajarins-projects.vercel.app/api/users?email=${user.email}`);
-        const data = await response.json();
-        if (response.ok) {
-          setUserData(data);
-          setUser(data); // Update global user state
-        }
+        const response = await axios.get(`https://mfs-633flhnb8-khadizajarins-projects.vercel.app/api/users`, {
+          params: { email: user.email },
+        });
+  
+        setUserData(response.data);
+        setUser(response.data); // ✅ Update global user state
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching user data:", error.response?.data?.message || error.message);
       }
     };
-
+  
     fetchUserData();
   }, [user?.email]);
+  
 
   if (!isClient || !userData) return <p>Loading...</p>;
 

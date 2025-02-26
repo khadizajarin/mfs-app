@@ -2,38 +2,44 @@
 import { AuthContext } from "@/lib/AuthProvider";
 import { useState, useEffect, useContext } from "react";
 import Swal from "sweetalert2";
-import Navbar from "../homepage/navbar";
 import Button from "../commoncomps/Button";
+import axios from "axios";
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [agents, setAgents] = useState([]);
 
+
+  // ✅ Fetch pending agents using Axios
   useEffect(() => {
-    fetch("http://localhost:5000/api/admin/pending-agents")
-      .then((res) => res.json())
-      .then((data) => setAgents(data))
-      .catch((error) => console.error("Error fetching agents:", error));
+    axios
+      .get("http://localhost:5000/api/admin/pending-agents")
+      .then((response) => {
+        setAgents(response.data); // ✅ Set fetched agents
+      })
+      .catch((error) => {
+        console.error("Error fetching agents:", error);
+      });
   }, []);
 
+  // ✅ Approve Agent using Axios
   const approveAgent = async (agentEmail) => {
     const adminEmail = user?.email;
-    try {
-      const response = await fetch("http://localhost:5000/api/admin/approve-agent", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminEmail, agentEmail }),
-      });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/admin/approve-agent",
+        { adminEmail, agentEmail }, // ✅ Pass data in request body
+        { headers: { "Content-Type": "application/json" } } // ✅ Set headers
+      );
 
       Swal.fire("Success!", "Agent approved successfully!", "success");
 
-      setAgents(agents.filter((agent) => agent.email !== agentEmail));
+      // ✅ Update state to remove approved agent
+      setAgents((prevAgents) => prevAgents.filter((agent) => agent.email !== agentEmail));
     } catch (error) {
       console.error("Approval error:", error);
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", error.response?.data?.message || "Something went wrong", "error");
     }
   };
 
